@@ -25,7 +25,7 @@ class App {
         scene.physicsEnabled = true;
         scene.collisionsEnabled = true;
 
-        var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 10, -30), scene);
+        var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 15, -45), scene);
         
 
         camera.setTarget(BABYLON.Vector3.Zero());
@@ -39,12 +39,11 @@ class App {
         const [ground, groundAggregate, groundBody] = createGround(scene);
 
        
+        let { button, label, clearBtn, resetBtn } = createGUI();
 
-        const { button, label, clearBtn, resetBtn } = createGUI()
+        let [boxes, boxBodies] = createCubes(4, scene, label);
 
-        const [boxes, boxesBody] = createCubes(4, scene, label);
-
-        const advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("myUI");
+        let advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("myUI");
 
         advancedTexture.addControl(button);
         advancedTexture.addControl(clearBtn);
@@ -53,6 +52,7 @@ class App {
 
         boxes.forEach((box) => {
             setElementTrigger(box, scene, label);
+            box.physicsBody.setMassProperties({ mass: 1 });
         });
 
         button.onPointerUpObservable.add(function() {
@@ -66,19 +66,12 @@ class App {
        
         resetBtn.onPointerUpObservable.add(function() {
             label.text = "Элемент не выбран";
-            recreateCubes(scene, boxes, boxesBody, label);
+            recreateCubes(scene, boxes, boxBodies, label);
+           
         });
 
 
-        window.addEventListener("keydown", (ev) => {
-            if (ev.shiftKey && ev.ctrlKey && ev.altKey && ev.key === 'i') {
-                if (scene.debugLayer.isVisible()) {
-                    scene.debugLayer.hide();
-                } else {
-                    scene.debugLayer.show();
-                }
-            }
-        });
+       
 
         engine.runRenderLoop(() => {
             scene.render();

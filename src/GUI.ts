@@ -7,24 +7,18 @@ type GUIType = {
     resetBtn: GUI.Button
 }
 
-
-
-
 export function createGUI(): GUIType {
-
+    // Создание GUI элементов
     const button = GUI.Button.CreateSimpleButton("but1", "Изменить цвет");
     button.width = 0.07;
-    button.height = 0.07
+    button.height = 0.07;
     button.cornerRadius = 20;
     button.color = "white";
     button.fontSize = 22;
     button.background = "green";
-   
-    
     button.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
     button.paddingLeft = 0.1;
     button.left = "25px";
-
 
     const label = new GUI.TextBlock("label", "Элемент не выбран");
     label.width = 0.12;
@@ -35,10 +29,9 @@ export function createGUI(): GUIType {
     label.top = "100px";
     label.fontSize = 22;
 
-
     const clearBtn = GUI.Button.CreateSimpleButton("clearBtn", "Очистить");
     clearBtn.width = 0.07;
-    clearBtn.height = 0.07
+    clearBtn.height = 0.07;
     clearBtn.cornerRadius = 20;
     clearBtn.color = "white";
     clearBtn.fontSize = 22;
@@ -49,7 +42,7 @@ export function createGUI(): GUIType {
 
     const resetBtn = GUI.Button.CreateSimpleButton("resetBtn", "Сбросить кубы");
     resetBtn.width = 0.07;
-    resetBtn.height = 0.07
+    resetBtn.height = 0.07;
     resetBtn.cornerRadius = 20;
     resetBtn.color = "white";
     resetBtn.fontSize = 22;
@@ -58,6 +51,8 @@ export function createGUI(): GUIType {
     resetBtn.left = "25px";
     resetBtn.top = "-100px";
 
-
     return { button, label, clearBtn, resetBtn };
 }
+
+
+
