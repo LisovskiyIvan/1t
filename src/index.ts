@@ -2,86 +2,80 @@ import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import * as BABYLON from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
-import { changeColor, createCubes, recreateCubes, setBoxTexture, setElementTrigger } from "./Cubes";
-import { createGround } from "./Ground";
-import * as GUI from "@babylonjs/gui"
-import { createGUI } from "./GUI";
-
-
+import { CubeManager } from "./Cubes";
+import { Surroundings } from "./Surroundings";
+import { GUIManager } from "./GUI";
 
 class App {
+    private engine: BABYLON.Engine;
+    private scene: BABYLON.Scene;
+    private camera: BABYLON.FreeCamera;
+    private light: BABYLON.HemisphericLight;
+    private cubeManager: CubeManager;
+    private guiManager: GUIManager;
+    private surroundings: Surroundings;
+
     constructor() {
-        this.createScene();
+        this.initializeEngine().then(() => {
+            this.createScene();
+            this.run();
+        });
     }
 
-    async createScene(){
-        var canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
+    async initializeEngine() {
+        const canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        var engine = new BABYLON.Engine(canvas, true);
-        var scene = new BABYLON.Scene(engine);
+        this.engine = new BABYLON.Engine(canvas, true);
+
         const havokInstance = await HavokPhysics();
-        scene.enablePhysics(new BABYLON.Vector3(0, -9.8, 0), new BABYLON.HavokPlugin(true, havokInstance));
-        scene.physicsEnabled = true;
-        scene.collisionsEnabled = true;
+        this.scene = new BABYLON.Scene(this.engine);
+        this.scene.enablePhysics(
+            new BABYLON.Vector3(0, -9.8, 0),
+            new BABYLON.HavokPlugin(true, havokInstance)
+        );
+        this.scene.physicsEnabled = true;
+        this.scene.collisionsEnabled = true;
+    }
 
-        var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 15, -45), scene);
+    createScene() {
+        this.setupCameraAndLight();
+        this.surroundings = new Surroundings(this.scene);
+        this.guiManager = new GUIManager(this.scene);
+        this.cubeManager = new CubeManager(this.scene, this.guiManager.getLabel());
+        this.guiManager.setupCubes(this.cubeManager);
+        this.guiManager.setupGUI();
+        this.cubeManager.createCubes(4);
         
+    }
 
-        camera.setTarget(BABYLON.Vector3.Zero());
-      
-        camera.attachControl(canvas, true);
-      
-        var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-      
-        light.intensity = 0.7;
-      
-        const [ground, groundAggregate, groundBody] = createGround(scene);
+    setupCameraAndLight() {
+        this.camera = new BABYLON.FreeCamera(
+            "camera1",
+            new BABYLON.Vector3(0, 15, -45),
+            this.scene
+        );
+        this.camera.setTarget(BABYLON.Vector3.Zero());
+        this.camera.attachControl(this.engine.getRenderingCanvas(), true);
 
-       
-        let { button, label, clearBtn, resetBtn } = createGUI();
-
-        let [boxes, boxBodies] = createCubes(4, scene, label);
-
-        let advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("myUI");
-
-        advancedTexture.addControl(button);
-        advancedTexture.addControl(clearBtn);
-        advancedTexture.addControl(label);
-        advancedTexture.addControl(resetBtn);
-
-        boxes.forEach((box) => {
-            setElementTrigger(box, scene, label);
-            box.physicsBody.setMassProperties({ mass: 1 });
-        });
-
-        button.onPointerUpObservable.add(function() {
-            changeColor(boxes, scene, label.text);
-        });
-        
-        clearBtn.onPointerUpObservable.add(function() {
-            label.text = "Элемент не выбран";
-            setBoxTexture(boxes, scene);
-        });
-       
-        resetBtn.onPointerUpObservable.add(function() {
-            label.text = "Элемент не выбран";
-            recreateCubes(scene, boxes, boxBodies, label);
-           
-        });
-
-
-       
-
-        engine.runRenderLoop(() => {
-            scene.render();
-        });
-    
-        window.addEventListener("resize", function() {
-            engine.resize();
-        });
+        this.light = new BABYLON.HemisphericLight(
+            "light",
+            new BABYLON.Vector3(0, 1, 0),
+            this.scene
+        );
+        this.light.intensity = 0.7;
     }
 
 
+    run() {
+        this.engine.runRenderLoop(() => {
+            this.scene.render();
+        });
+
+        window.addEventListener("resize", () => {
+            this.engine.resize();
+        });
+    }
 }
+
 new App();
